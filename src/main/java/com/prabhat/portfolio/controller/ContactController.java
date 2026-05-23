@@ -15,7 +15,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/contacts")
 @Slf4j
 public class ContactController {
 
@@ -26,16 +26,16 @@ public class ContactController {
     }
 
     // ================= POST CONTACT =================
-    @PostMapping("/contact")
+    @PostMapping
     public ResponseEntity<ResponseDto> contact(
             @Valid @RequestBody RequestDto requestDto) {
 
-        log.info("POST /contact API called for email: {}",
+        log.info("POST /contacts API called for email: {}",
                 requestDto.getEmail());
 
         ResponseDto response = contactService.contactUser(requestDto);
 
-        log.info("POST /contact API completed successfully for email: {}",
+        log.info("POST /contacts API completed successfully for email: {}",
                 requestDto.getEmail());
 
         return ResponseEntity
@@ -44,7 +44,7 @@ public class ContactController {
     }
 
     // ================= GET ALL =================
-    @GetMapping("/contacts")
+    @GetMapping
     public ResponseEntity<List<ResponseDto>> getAllContacts() {
 
         log.info("GET /contacts API called");
@@ -58,40 +58,40 @@ public class ContactController {
     }
 
     // ================= GET BY ID =================
-    @GetMapping("/contact/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseDto> getContactById(
             @PathVariable Long id) {
 
-        log.info("GET /contact/{} API called", id);
+        log.info("GET /contacts/{} API called", id);
 
         ResponseDto contact = contactService.getContactById(id);
 
-        log.info("GET /contact/{} completed successfully", id);
+        log.info("GET /contacts/{} completed successfully", id);
 
         return ResponseEntity.ok(contact);
     }
 
     // ================= DELETE =================
-    @DeleteMapping("/contact/{id}")
-    public ResponseEntity<String> deleteContact(
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteContact(
             @PathVariable Long id) {
 
-        log.info("DELETE /contact/{} API called", id);
+        log.info("DELETE /contacts/{} API called", id);
 
         contactService.deleteContact(id);
 
-        log.info("DELETE /contact/{} completed successfully", id);
+        log.info("DELETE /contacts/{} completed successfully", id);
 
-        return ResponseEntity.ok("Contact deleted successfully");
+        return ResponseEntity.noContent().build();
     }
 
     // ================= UPDATE STATUS =================
-    @PatchMapping("/contact/{id}/status")
+    @PatchMapping("/{id}/status")
     public ResponseEntity<String> updateStatus(
             @PathVariable Long id,
             @RequestParam ContactStatus status) {
 
-        log.info("PATCH /contact/{}/status called with status: {}",
+        log.info("PATCH /contacts/{}/status called with status: {}",
                 id, status);
 
         contactService.updateStatus(id, status);
