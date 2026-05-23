@@ -15,6 +15,7 @@ import com.prabhat.portfolio.exception.ContactException.InvalidStatusException;
 import com.prabhat.portfolio.exception.ContactException.NotFoundException;
 import com.prabhat.portfolio.exception.ContactException.RateLimitException;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
@@ -22,77 +23,82 @@ import lombok.extern.slf4j.Slf4j;
 public class GlobalExceptionHandler {
 
     
-    private ResponseEntity<Map<String, Object>> buildResponse(
+    private ResponseEntity<ApiError> buildResponse(
             String message,
-            HttpStatus status
+            HttpStatus status,
+            String path
     ) {
-
-        Map<String, Object> error = new HashMap<>();
-
-        error.put("timestamp", LocalDateTime.now());
-        error.put("status", status.value());
-        error.put("error", status.name());
-        error.put("message", message);
-
-        return new ResponseEntity<>(error, status);
+        return new ResponseEntity<>(
+                ApiError.of(message, status, path),
+                status
+        );
     }
 
-  
+    
     @ExceptionHandler(RateLimitException.class)
-    public ResponseEntity<Map<String, Object>> handleRateLimit(
-            RateLimitException ex) {
+    public ResponseEntity<ApiError> handleRateLimit(
+            RateLimitException ex,
+            HttpServletRequest request) {
 
         log.warn("RateLimitException: {}", ex.getMessage());
 
         return buildResponse(
                 ex.getMessage(),
-                HttpStatus.TOO_MANY_REQUESTS
+                HttpStatus.TOO_MANY_REQUESTS,
+                request.getRequestURI()
         );
     }
 
-    
+
     @ExceptionHandler(DuplicateMessageException.class)
-    public ResponseEntity<Map<String, Object>> handleDuplicate(
-            DuplicateMessageException ex) {
+    public ResponseEntity<ApiError> handleDuplicate(
+            DuplicateMessageException ex,
+            HttpServletRequest request) {
 
         log.warn("DuplicateMessageException: {}", ex.getMessage());
 
         return buildResponse(
                 ex.getMessage(),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
+                request.getRequestURI()
         );
     }
 
-    
+
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(
-            NotFoundException ex) {
+    public ResponseEntity<ApiError> handleNotFound(
+            NotFoundException ex,
+            HttpServletRequest request) {
 
         log.error("NotFoundException: {}", ex.getMessage());
 
         return buildResponse(
                 ex.getMessage(),
-                HttpStatus.NOT_FOUND
+                HttpStatus.NOT_FOUND,
+                request.getRequestURI()
         );
     }
 
-    
+    // ================= INVALID STATUS =================
     @ExceptionHandler(InvalidStatusException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidStatus(
-            InvalidStatusException ex) {
+    public ResponseEntity<ApiError> handleInvalidStatus(
+            InvalidStatusException ex,
+            HttpServletRequest request) {
 
         log.warn("InvalidStatusException: {}", ex.getMessage());
 
         return buildResponse(
                 ex.getMessage(),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
+                request.getRequestURI()
         );
     }
 
-    
+   
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(
-            MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiError> handleValidation(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
 
         Map<String, String> validationErrors = new HashMap<>();
 
@@ -104,53 +110,46 @@ public class GlobalExceptionHandler {
                                 error.getDefaultMessage()
                         ));
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Failed");
-        response.put("messages", validationErrors);
-
         log.warn("Validation failed: {}", validationErrors);
 
         return new ResponseEntity<>(
-                response,
+                ApiError.builder()
+                        .message("Validation Failed")
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .error(HttpStatus.BAD_REQUEST.name())
+                        .path(request.getRequestURI())
+                        .timestamp(LocalDateTime.now())
+                        .build(),
                 HttpStatus.BAD_REQUEST
         );
     }
 
-   
+  
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
-            IllegalArgumentException ex) {
+    public ResponseEntity<ApiError> handleIllegalArgument(
+            IllegalArgumentException ex,
+            HttpServletRequest request) {
 
         log.warn("IllegalArgumentException: {}", ex.getMessage());
 
         return buildResponse(
                 "Invalid request value",
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
+                request.getRequestURI()
         );
     }
 
-    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
-    public ResponseEntity<Void> handleNoResource(
-            org.springframework.web.servlet.resource.NoResourceFoundException ex) {
-        log.debug("No static resource: {}", ex.getMessage());
-        return ResponseEntity.notFound().build();
-    }
-    
-    
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneral(
-            Exception ex) {
+    public ResponseEntity<ApiError> handleGeneral(
+            Exception ex,
+            HttpServletRequest request) {
 
         log.error("Unexpected error occurred: ", ex);
 
         return buildResponse(
                 "Something went wrong",
-                HttpStatus.INTERNAL_SERVER_ERROR
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                request.getRequestURI()
         );
     }
-    
-    
 }
