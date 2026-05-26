@@ -1,6 +1,7 @@
 package com.prabhat.portfolio.service.impl;
 
 import org.springframework.scheduling.annotation.Async;
+
 import org.springframework.stereotype.Service;
 
 import com.prabhat.portfolio.constant.EmailConstants;
@@ -9,6 +10,7 @@ import com.resend.Resend;
 import com.resend.services.emails.model.CreateEmailOptions;
 
 import lombok.extern.slf4j.Slf4j;
+
 
 @Service
 @Slf4j
@@ -28,10 +30,14 @@ public class EmailServiceImpl implements EmailService {
 
         try {
             CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from("onboarding@resend.dev")
+                    .from(EmailConstants.FROM_EMAIL)
                     .to(EmailConstants.ADMIN_EMAIL)
                     .replyTo(email)
-                    .subject("Portfolio Contact: " + subject + " (" + email + ")")
+                    .subject(String.format(
+                            EmailConstants.SUBJECT_FORMAT,
+                            subject,
+                            email
+                    ))
                     .text(buildAdminMessage(name, email, subject, message))
                     .build();
 
@@ -45,9 +51,12 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private String buildAdminMessage(String name, String email, String subject, String message) {
-        return "Name: " + name + "\n"
-             + "Email: " + email + "\n"
-             + "Subject: " + subject + "\n"
-             + "Message: " + message;
+        return String.format(
+                EmailConstants.BODY_FORMAT,
+                name,
+                email,
+                subject,
+                message
+        );
     }
 }

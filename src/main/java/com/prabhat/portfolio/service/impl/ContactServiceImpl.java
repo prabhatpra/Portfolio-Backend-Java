@@ -5,22 +5,25 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.prabhat.portfolio.dto.ApiResponseDto;
 import com.prabhat.portfolio.dto.RequestDto;
 import com.prabhat.portfolio.dto.ResponseDto;
 import com.prabhat.portfolio.entity.Contact;
 import com.prabhat.portfolio.enums.ContactStatus;
-import com.prabhat.portfolio.exception.ContactException.DuplicateMessageException;
-import com.prabhat.portfolio.exception.ContactException.NotFoundException;
-import com.prabhat.portfolio.exception.ContactException.RateLimitException;
+import com.prabhat.portfolio.exception.DuplicateMessageException;
+import com.prabhat.portfolio.exception.NotFoundException;
+import com.prabhat.portfolio.exception.RateLimitException;
 import com.prabhat.portfolio.repository.ContactRepository;
 import com.prabhat.portfolio.service.ContactService;
 import com.prabhat.portfolio.service.EmailService;
 import com.prabhat.portfolio.util.RateLimiter;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ContactServiceImpl implements ContactService {
 
     private static final int HOURLY_LIMIT = 3;
@@ -29,50 +32,45 @@ public class ContactServiceImpl implements ContactService {
     private final RateLimiter rateLimiter;
     private final EmailService emailService;
 
-    public ContactServiceImpl(ContactRepository repository,
-                              RateLimiter rateLimiter,
-                              EmailService emailService) {
-        this.repository = repository;
-        this.rateLimiter = rateLimiter;
-        this.emailService = emailService;
-    }
 
     @Override
-    public ResponseDto contactUser(RequestDto request) {
+    public ApiResponseDto contactUser(RequestDto request) {
 
-        String email = request.getEmail();
+        String email = request.getEmail() != null
+                ? request.getEmail().trim().toLowerCase()
+                : "";
+
+        String message = request.getMessage() != null
+                ? request.getMessage().trim()
+                : "";
 
         log.info("Contact request received for email: {}", email);
 
         // 1. Rate limit check
         if (!rateLimiter.isAllowed(email)) {
-            throw new RateLimitException("Too many requests. Try again later.");
+            throw new RateLimitException();
         }
 
-        // 2. Duplicate message check
-        boolean duplicate = repository.existsByEmailAndMessage(email, request.getMessage());
-
-        if (duplicate) {
-            throw new DuplicateMessageException("Duplicate message not allowed");
-        }
-
-        // 3. Hourly limit check
+        // 2. Hourly limit check
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
 
         long count = repository.countByEmailAndCreatedAtAfter(email, oneHourAgo);
 
         if (count >= HOURLY_LIMIT) {
-            throw new RateLimitException("Only 3 messages allowed per hour");
+            throw new RateLimitException();
         }
 
-        log.info("Validation passed for email: {}", email);
+        // 3. Duplicate check
+        if (repository.existsByEmailAndMessage(email, message)) {
+            throw new DuplicateMessageException();
+        }
 
-        // 4. Save contact
+        // 4. Save entity
         Contact contact = Contact.builder()
-                .name(request.getName())
+                .name(request.getName() != null ? request.getName().trim() : "")
                 .email(email)
-                .subject(request.getSubject())
-                .message(request.getMessage())
+                .subject(request.getSubject() != null ? request.getSubject().trim() : "")
+                .message(message)
                 .status(ContactStatus.NEW)
                 .build();
 
@@ -80,7 +78,7 @@ public class ContactServiceImpl implements ContactService {
 
         log.info("Contact saved with id: {}", saved.getId());
 
-        // 5. Send email
+        // 5. Email send
         emailService.sendContactMail(
                 saved.getName(),
                 saved.getEmail(),
@@ -88,68 +86,57 @@ public class ContactServiceImpl implements ContactService {
                 saved.getMessage()
         );
 
-        log.info("Email notification sent for: {}", email);
-
-        return mapToDto(saved);
+        return ApiResponseDto.builder()
+                .success(true)
+                .message("Message sent successfully")
+                .build();
     }
 
     @Override
     public List<ResponseDto> getAllContacts() {
-
-        log.info("Fetching all contacts");
-
-        List<ResponseDto> list = repository.findAll()
+        return repository.findAll()
                 .stream()
                 .map(this::mapToDto)
                 .toList();
-
-        log.info("Total contacts fetched: {}", list.size());
-
-        return list;
     }
 
     @Override
     public ResponseDto getContactById(Long id) {
 
-        log.info("Fetching contact by id: {}", id);
-
         Contact contact = repository.findById(id)
-                .orElseThrow(() ->
-                        new NotFoundException("Contact not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException(id));
 
         return mapToDto(contact);
     }
 
     @Override
-    public void deleteContact(Long id) {
-
-        log.info("Deleting contact id: {}", id);
+    public ApiResponseDto deleteContact(Long id) {
 
         Contact contact = repository.findById(id)
-                .orElseThrow(() ->
-                        new NotFoundException("Contact not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException(id));
 
         repository.delete(contact);
 
-        log.info("Contact deleted successfully: {}", id);
+        return ApiResponseDto.builder()
+                .success(true)
+                .message("Deleted successfully")
+                .build();
     }
 
     @Override
-    public void updateStatus(Long id, ContactStatus status) {
-
-        log.info("Updating status for id: {} to {}", id, status);
+    public ApiResponseDto updateStatus(Long id, ContactStatus status) {
 
         Contact contact = repository.findById(id)
-                .orElseThrow(() ->
-                        new NotFoundException("Contact not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException(id));
 
         contact.setStatus(status);
-
         repository.save(contact);
-
-        log.info("Status updated successfully for id: {}", id);
+        
+        return ApiResponseDto.builder()
+        		.success(true)
+        		.message("Status updated successfully")
+        		.build();
     }
-
 
     private ResponseDto mapToDto(Contact c) {
         return ResponseDto.builder()
