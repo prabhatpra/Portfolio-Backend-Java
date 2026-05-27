@@ -3,8 +3,11 @@ package com.prabhat.portfolio.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import com.prabhat.portfolio.constant.ContactConstants;
 import com.prabhat.portfolio.dto.ApiResponseDto;
 import com.prabhat.portfolio.dto.RequestDto;
 import com.prabhat.portfolio.dto.ResponseDto;
@@ -26,13 +29,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ContactServiceImpl implements ContactService {
 
-    private static final int HOURLY_LIMIT = 3;
 
     private final ContactRepository repository;
     private final RateLimiter rateLimiter;
     private final EmailService emailService;
 
 
+    @CacheEvict(value = ContactConstants.CONTACTS_CACHE, allEntries = true)
     @Override
     public ApiResponseDto contactUser(RequestDto request) {
 
@@ -56,7 +59,7 @@ public class ContactServiceImpl implements ContactService {
 
         long count = repository.countByEmailAndCreatedAtAfter(email, oneHourAgo);
 
-        if (count >= HOURLY_LIMIT) {
+        if (count >= ContactConstants.HOURLY_LIMIT) {
             throw new RateLimitException();
         }
 
@@ -92,6 +95,7 @@ public class ContactServiceImpl implements ContactService {
                 .build();
     }
 
+    @Cacheable(ContactConstants.CONTACTS_CACHE)
     @Override
     public List<ResponseDto> getAllContacts() {
         return repository.findAll()
@@ -99,6 +103,7 @@ public class ContactServiceImpl implements ContactService {
                 .map(this::mapToDto)
                 .toList();
     }
+    
 
     @Override
     public ResponseDto getContactById(Long id) {
@@ -109,6 +114,7 @@ public class ContactServiceImpl implements ContactService {
         return mapToDto(contact);
     }
 
+    @CacheEvict(value = ContactConstants.CONTACTS_CACHE, allEntries = true)
     @Override
     public ApiResponseDto deleteContact(Long id) {
 
@@ -123,6 +129,7 @@ public class ContactServiceImpl implements ContactService {
                 .build();
     }
 
+    @CacheEvict(value = ContactConstants.CONTACTS_CACHE, allEntries =true)
     @Override
     public ApiResponseDto updateStatus(Long id, ContactStatus status) {
 

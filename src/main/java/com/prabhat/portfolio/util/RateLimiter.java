@@ -9,7 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.prabhat.portfolio.constant.RateLimitConstants;
+import com.prabhat.portfolio.constant.ContactConstants;
 
 @Component
 public class RateLimiter {
@@ -25,10 +25,10 @@ public class RateLimiter {
         List<Long> timestamps = requestMap.get(email);
 
         timestamps.removeIf(time ->
-                (now - time) > RateLimitConstants.TIME_WINDOW
+                (now - time) > ContactConstants.TIME_WINDOW
         );
 
-        if (timestamps.size() >= RateLimitConstants.LIMIT) {
+        if (timestamps.size() >= ContactConstants.HOURLY_LIMIT) {
             return false;
         }
 
@@ -44,7 +44,7 @@ public class RateLimiter {
         requestMap.values()
                 .forEach(list ->
                         list.removeIf(time ->
-                                (now - time) > RateLimitConstants.TIME_WINDOW
+                                (now - time) > ContactConstants.TIME_WINDOW
                         )
                 );
     }
