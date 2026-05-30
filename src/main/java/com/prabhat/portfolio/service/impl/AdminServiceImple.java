@@ -9,6 +9,7 @@ import com.prabhat.portfolio.auth.dto.AdminResponse;
 import com.prabhat.portfolio.auth.dto.LoginRequest;
 import com.prabhat.portfolio.auth.dto.RegisterRequest;
 import com.prabhat.portfolio.entity.Admin;
+import com.prabhat.portfolio.enums.Role;
 import com.prabhat.portfolio.repository.AdminRepository;
 import com.prabhat.portfolio.security.JwtService;
 import com.prabhat.portfolio.service.AdminService;
@@ -38,7 +39,7 @@ public class AdminServiceImple implements AdminService {
 		Admin admin = Admin.builder()
 				.email(request.getEmail())
 				.password(passwordEncoder.encode(request.getPassword()))
-				.role("ROLE_ADMIN")
+				.role(Role.ROLE_ADMIN)
 				.build();
 		
 		Admin savedAdmin = adminRepository.save(admin);
@@ -48,7 +49,7 @@ public class AdminServiceImple implements AdminService {
 		return AdminResponse.builder()
 				.id(savedAdmin.getId())
 				.email(savedAdmin.getEmail())
-				.role(savedAdmin.getRole())
+				.role(savedAdmin.getRole().name())
 				.build();
 	}
 	
@@ -73,12 +74,12 @@ public class AdminServiceImple implements AdminService {
 		
 		log.info("Admin logged in successfully: {}", admin.getEmail());
 		
-		String token = jwtService.generateToken(admin.getEmail(), admin.getRole());
+		String token = jwtService.generateToken(admin.getEmail(), admin.getRole().name());
 		
 		return AdminResponse.builder()
 				.id(admin.getId())
 				.email(admin.getEmail())
-				.role(admin.getRole())
+				.role(admin.getRole().name())
 				.token(token)
 				.lastLogin(admin.getLastLogin())
 				.build();
