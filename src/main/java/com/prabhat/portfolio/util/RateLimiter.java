@@ -11,7 +11,10 @@ import org.springframework.stereotype.Component;
 
 import com.prabhat.portfolio.constant.ContactConstants;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class RateLimiter {
 
     private final Map<String, List<Long>> requestMap = new ConcurrentHashMap<>();
@@ -29,6 +32,8 @@ public class RateLimiter {
         );
 
         if (timestamps.size() >= ContactConstants.HOURLY_LIMIT) {
+        	log.warn("Rate limit exceeded for email: {}", email);
+        	
             return false;
         }
 
@@ -47,5 +52,7 @@ public class RateLimiter {
                                 (now - time) > ContactConstants.TIME_WINDOW
                         )
                 );
+        
+        log.info("Rate limiter cleanup completed");
     }
 }

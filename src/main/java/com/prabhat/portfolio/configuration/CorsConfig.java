@@ -16,12 +16,16 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:5173",
                                 "https://prabhat-dis.vercel.app") 
-                .allowedMethods("*")
-                .allowedHeaders("*");
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
+                .allowedHeaders("Authorization", "Contact-Type")
+                .allowCredentials(true);
     }
     
     @Bean
     public Resend resend(@Value("${resend.api.key}") String key) {
+    	if (key == null || key.isBlank()) {
+    		throw new IllegalStateException("Resend API KEY is missing");
+    	}
     	return new Resend(key);
     }
 }

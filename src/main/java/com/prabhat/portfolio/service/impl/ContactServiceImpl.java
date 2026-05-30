@@ -39,18 +39,18 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ApiResponseDto contactUser(RequestDto request) {
 
-        String email = request.getEmail() != null
-                ? request.getEmail().trim().toLowerCase()
-                : "";
+    	String email = normalize(request.getEmail()).toLowerCase();
 
-        String message = request.getMessage() != null
-                ? request.getMessage().trim()
-                : "";
+    	String message = normalize(request.getMessage());
 
         log.info("Contact request received for email: {}", email);
 
+        if (email.isBlank()) {
+        	throw new IllegalArgumentException("Email connot be empty");
+        }
         // 1. Rate limit check
         if (!rateLimiter.isAllowed(email)) {
+        	log.warn("Rate limit exceeded for email: {}", email);
             throw new RateLimitException();
         }
 
@@ -60,11 +60,13 @@ public class ContactServiceImpl implements ContactService {
         long count = repository.countByEmailAndCreatedAtAfter(email, oneHourAgo);
 
         if (count >= ContactConstants.HOURLY_LIMIT) {
+        	log.warn("Hourly limit exceeded for email: {}", email);
             throw new RateLimitException();
         }
 
         // 3. Duplicate check
         if (repository.existsByEmailAndMessage(email, message)) {
+        	log.warn("Duplicate message detected for email: {}", email);
             throw new DuplicateMessageException();
         }
 
@@ -98,6 +100,9 @@ public class ContactServiceImpl implements ContactService {
     @Cacheable(ContactConstants.CONTACTS_CACHE)
     @Override
     public List<ResponseDto> getAllContacts() {
+    	
+    	log.info("Fetching all contacts");
+    	
         return repository.findAll()
                 .stream()
                 .map(this::mapToDto)
@@ -108,6 +113,8 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ResponseDto getContactById(Long id) {
 
+    	log.info("Fetching contact by id={}", id);
+    	
         Contact contact = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id));
 
@@ -118,11 +125,15 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ApiResponseDto deleteContact(Long id) {
 
+    	log.info("Deleting contact with id: {}", id);
+    	
         Contact contact = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id));
 
         repository.delete(contact);
 
+        log.info("Contact deleted successfully with id: {}", id);
+        
         return ApiResponseDto.builder()
                 .success(true)
                 .message("Deleted successfully")
@@ -133,11 +144,14 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ApiResponseDto updateStatus(Long id, ContactStatus status) {
 
-        Contact contact = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+    	log.info("Updating status for contact id: {}", id, status);
+    	
+        Contact contact = getContact(id);
 
         contact.setStatus(status);
         repository.save(contact);
+        
+        log.info("Status updated successfully for contact id: {}", id);
         
         return ApiResponseDto.builder()
         		.success(true)
@@ -145,6 +159,15 @@ public class ContactServiceImpl implements ContactService {
         		.build();
     }
 
+    private Contact getContact(Long id) {
+    	return repository.findById(id)
+    			.orElseThrow(() -> new NotFoundException(id));
+    }
+    
+    private String normalize(String value) {
+    	return value == null ? "" : value.trim();
+    }
+    
     private ResponseDto mapToDto(Contact c) {
         return ResponseDto.builder()
                 .id(c.getId())
