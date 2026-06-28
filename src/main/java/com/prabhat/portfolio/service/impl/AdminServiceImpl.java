@@ -60,6 +60,7 @@ public class AdminServiceImpl implements AdminService {
 		
 		return RegisterResponseDto.builder()
 				.id(savedAdmin.getId())
+				.userName(savedAdmin.getUserName())
 				.email(savedAdmin.getEmail())
 				.message(Constants.REGISTER_SUCCESS)
 				.build();
