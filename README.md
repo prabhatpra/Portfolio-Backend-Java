@@ -1,128 +1,92 @@
 # ☕ Portfolio Backend
 
-This is the **backend part** of the Portfolio-Dis project, built using **Spring Boot**, **MySQL**, and **Resend Email Service**.
+A production-ready backend for my personal portfolio website, built with **Spring Boot**, **Spring Security (JWT)**, **MySQL/PostgreSQL**, and **Resend Email API**. It provides secure authentication, contact management, rate limiting, caching, and email notifications.
 
 ---
 
 # 🛠 Tech Stack
 
-* ☕ Java 17
+* ☕ Java 21
 * 🚀 Spring Boot 3.3.5
-* 🗄 MySQL Database
-* 📧 Resend Email Service
-* 🔒 Input Validation & Rate Limiting
+* 🔐 Spring Security + JWT Authentication
+* 🗄 Spring Data JPA (Hibernate)
+* 🐬 MySQL (Development)
+* 🐘 PostgreSQL (Production)
+* 📧 Resend Email API
+* ⚡ Spring Cache
+* 🔄 Async Processing
+* 🧪 Jakarta Validation
+* 🐳 Docker
 * ☁️ Render Deployment
 
 ---
 
-# ⚡ Features
+# ✨ Features
 
-* ✅ REST API for Contact Form
-* 📬 Email Notification on new contact
-* 🗄 Contact messages stored in MySQL
-* ⏱ Rate Limiting — 3 emails per 10 minutes
-* 🚫 Duplicate message detection
+* 🔐 JWT-based Authentication
+* 👤 Admin Registration & Login
+* 📬 Contact Form API
+* 📧 Email Notification to Admin
+* 🗄 Contact Message Management
+* ⚡ Spring Cache Support
+* ⏱ Rate Limiting
+* 🚫 Duplicate Message Detection
 * ⚠️ Global Exception Handling
-* 🌐 CORS Configuration for Frontend
+* ✅ Input Validation
+* 🌐 CORS Configuration
+* 📝 Structured Logging
 
 ---
 
-# 📂 Project Structure
+# 🔗 REST API
 
-```plaintext
-contact-backend/
-├── Dockerfile
-├── pom.xml
-├── README.md
-└── src/
-    └── main/
-        ├── java/com/prabhat/portfolio/
-        │   ├── PortfolioBackendApplication.java
-        │   ├── configuration/
-        │   │   └── CorsConfig.java            # CORS settings
-        │   ├── constant/
-        │   │   ├── EmailConstants.java         # Email constants
-        │   │   └── RateLimitConstants.java     # Rate limit constants
-        │   ├── controller/
-        │   │   └── ContactController.java      # REST endpoints
-        │   ├── dto/
-        │   │   ├── RequestDto.java             # Request body
-        │   │   └── ResponseDto.java            # Response body
-        │   ├── entity/
-        │   │   └── Contact.java               # JPA Entity
-        │   ├── enums/
-        │   │   └── ContactStatus.java         # NEW, READ, RESOLVED
-        │   ├── exception/
-        │   │   ├── ApiError.java
-        │   │   ├── ContactException.java
-        │   │   └── GlobalExceptionHandler.java
-        │   ├── repository/
-        │   │   └── ContactRepository.java
-        │   ├── service/
-        │   │   ├── ContactService.java
-        │   │   ├── EmailService.java
-        │   │   └── impl/
-        │   └── util/
-        │       └── RateLimiter.java
-        └── resources/
-            ├── application.properties
-            ├── application-dev.properties
-            └── application-prod.properties
+## Authentication
+
+| Method | Endpoint             | Description          |
+| ------ | -------------------- | -------------------- |
+| POST   | `/api/auth/register` | Register Admin       |
+| POST   | `/api/auth/login`    | Login & Generate JWT |
+
+## Contacts
+
+| Method | Endpoint                    | Description           |
+| ------ | --------------------------- | --------------------- |
+| POST   | `/api/contacts`             | Submit Contact Form   |
+| GET    | `/api/contacts`             | Get All Contacts      |
+| GET    | `/api/contacts/{id}`        | Get Contact By ID     |
+| PATCH  | `/api/contacts/{id}/status` | Update Contact Status |
+| DELETE | `/api/contacts/{id}`        | Delete Contact        |
+
+---
+
+# ⚙️ Environment Variables
+
+```properties
+DB_URL
+DB_USERNAME
+DB_PASSWORD
+JWT_SECRET
+RESEND_API_KEY
+PORT
 ```
 
 ---
 
-# 🔗 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/contact` | Submit contact form |
-| GET | `/api/contacts` | Get all contacts |
-| GET | `/api/contact/{id}` | Get contact by ID |
-| DELETE | `/api/contact/{id}` | Delete contact |
-| PATCH | `/api/contact/{id}/status` | Update status |
-
----
-
-# 💻 Project Setup
+# 🚀 Run Locally
 
 ```bash
-# Clone the repo
-git clone https://github.com/prabhatpra/contact-backend.git
+git clone <repository-url>
+cd Portfolio-Backend-Java
 
-# Set environment variables
-export DB_URL=jdbc:mysql://localhost:3306/portfolio_db
-export DB_USERNAME=your_username
-export DB_PASSWORD=your_password
-export RESEND_API_KEY=your_resend_api_key
-
-# Run the project
 mvn spring-boot:run
 ```
 
 ---
 
-# 🚀 Live Deployment
+# 👨‍💻 Author
 
-🔗 Backend URL:
-https://portfolio-backend-vgeu.onrender.com
+**Prabhat Prajapati**
 
----
-
-# 👤 Author
-
-## Prabhat Prajapati
-
-📧 Email: [prabhatprajapati01@gmail.com](mailto:prabhatprajapati01@gmail.com)
-
-🔗 GitHub: https://github.com/prabhatpra
-
-🔗 LinkedIn: https://www.linkedin.com/in/prabhat-prajapati-01p6/
-
----
-
-# 🙏 Thank You
-
-If you found this project useful, feel free to ⭐ star the repository!
-
-Suggestions and improvements are always welcome 😊
+* GitHub: https://github.com/prabhatpra
+* LinkedIn: https://www.linkedin.com/in/prabhat-prajapati-01p6/
+* Email: [prabhatprajapati01@gmail.com](mailto:prabhatprajapati01@gmail.com)
