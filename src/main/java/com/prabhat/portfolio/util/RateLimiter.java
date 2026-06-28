@@ -1,15 +1,15 @@
 package com.prabhat.portfolio.util;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.prabhat.portfolio.constant.ContactConstants;
+import com.prabhat.portfolio.constants.Constants;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,31 +17,35 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RateLimiter {
 
-    private final Map<String, List<Long>> requestMap = new ConcurrentHashMap<>();
+    private final Map<String, Deque<Long>> requestMap = new ConcurrentHashMap<>();
 
     public boolean isAllowed(String email) {
 
         long now = Instant.now().toEpochMilli();
 
-        requestMap.putIfAbsent(email, new CopyOnWriteArrayList<>());
+        Deque<Long> timestamps =
+                requestMap.computeIfAbsent(email, k -> new ArrayDeque<>());
 
-        List<Long> timestamps = requestMap.get(email);
+        while (!timestamps.isEmpty() &&
+                (now - timestamps.peekFirst()) > Constants.TIME_WINDOW) {
+            timestamps.pollFirst();
+        }
 
-        timestamps.removeIf(time ->
-                (now - time) > ContactConstants.TIME_WINDOW
-        );
-
-        if (timestamps.size() >= ContactConstants.HOURLY_LIMIT) {
-        	log.warn("Rate limit exceeded for email: {}", email);
-        	
+        if (timestamps.size() >= Constants.HOURLY_LIMIT) {
+            log.warn("Rate limit exceeded for email: {}", email);
             return false;
         }
 
-        timestamps.add(now);
+        timestamps.addLast(now);
+
+        if (timestamps.isEmpty()) {
+            requestMap.remove(email);
+        }
+
         return true;
     }
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = Constants.RATE_LIMITER_CLEANUP_INTERVAL)
     public void cleanUp() {
 
         long now = Instant.now().toEpochMilli();
@@ -49,7 +53,7 @@ public class RateLimiter {
         requestMap.values()
                 .forEach(list ->
                         list.removeIf(time ->
-                                (now - time) > ContactConstants.TIME_WINDOW
+                                (now - time) > Constants.TIME_WINDOW
                         )
                 );
         

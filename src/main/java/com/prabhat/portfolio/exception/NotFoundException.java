@@ -1,14 +1,12 @@
 package com.prabhat.portfolio.exception;
 
-import com.prabhat.portfolio.constant.ErrorCodeEnum;
+public class NotFoundException extends ApplicationException {
 
-public class NotFoundException extends ContactException {
+    public NotFoundException() {
+        super(ErrorCodeEnum.NOT_FOUND);
+    }
 
-	public NotFoundException(Long id) {
-		super(
-				ErrorCodeEnum.NOT_FOUND.getErrorCode(),
-				"Contact not found with id: " +id,
-				ErrorCodeEnum.NOT_FOUND.getHttpStatus()
-				);
-	}
+    public NotFoundException(String message) {
+        super(message, ErrorCodeEnum.NOT_FOUND);
+    }
 }

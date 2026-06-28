@@ -15,11 +15,11 @@ public class RequestDto {
 	
 	@NotBlank(message = "Email is required")
 	@Email(message = "Invalid email format")
-	@Size(max = 100, message = "Email too long")
+	@Size(max = 150, message = "Email must not exceed 150 characters")
 	private String email;
 	
 	@NotBlank(message = "Subject is required")
-	@Size(min = 5, max = 100, message = "subject must be 5 to 100 characters")
+	@Size(min = 5, max = 200, message = "subject must be 5 to 200 characters")
 	private String subject;
 	
 	@NotBlank(message = "Message is required")

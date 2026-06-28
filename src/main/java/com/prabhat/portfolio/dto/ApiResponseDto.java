@@ -1,5 +1,7 @@
 package com.prabhat.portfolio.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,4 +12,5 @@ public class ApiResponseDto {
 	private boolean success;
 	private String message;
 	private Object data;
+	private LocalDateTime timestamp;
 }

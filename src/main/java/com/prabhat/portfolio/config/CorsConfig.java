@@ -1,4 +1,4 @@
-package com.prabhat.portfolio.configuration;
+package com.prabhat.portfolio.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,19 +13,31 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173",
-                                "https://prabhat-dis.vercel.app") 
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
-                .allowedHeaders("Authorization", "Contact-Type")
+                .allowedOrigins(
+                        "http://localhost:5173",
+                        "https://prabhat-dis.vercel.app"
+                )
+                .allowedMethods(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "PATCH",
+                        "OPTIONS"
+                )
+                .allowedHeaders("*")
                 .allowCredentials(true);
     }
-    
+
     @Bean
     public Resend resend(@Value("${resend.api.key}") String key) {
-    	if (key == null || key.isBlank()) {
-    		throw new IllegalStateException("Resend API KEY is missing");
-    	}
-    	return new Resend(key);
+
+        if (key == null || key.isBlank()) {
+            throw new IllegalStateException("Resend API KEY is missing");
+        }
+
+        return new Resend(key);
     }
 }

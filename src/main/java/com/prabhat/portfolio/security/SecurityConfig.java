@@ -10,6 +10,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.prabhat.portfolio.constants.Constants;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -21,16 +23,29 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            
+            .cors(cors  -> {})
+            
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
+            
             .sessionManagement(s -> s
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
             .authorizeHttpRequests(auth -> auth
-            	.requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()  
-                .requestMatchers("/api/contacts/**").hasAuthority("ADMIN") 
+            	.requestMatchers(Constants.AUTH_BASE_PATH + Constants.LOGIN_PATH,
+            			         Constants.AUTH_BASE_PATH + Constants.REGISTER_PATH
+            			         ).permitAll()
+            	
+                .requestMatchers(HttpMethod.POST, Constants.CONTACT_BASE_PATH)
+                .permitAll()  
+                
+                .requestMatchers(Constants.CONTACT_BASE_PATH +"/**")
+                .hasAuthority("ROLE_ADMIN") 
+                
                 .anyRequest().authenticated()
             )
+            
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

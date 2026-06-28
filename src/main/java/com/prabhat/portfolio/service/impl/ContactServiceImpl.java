@@ -6,8 +6,9 @@ import java.util.List;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.prabhat.portfolio.constant.ContactConstants;
+import com.prabhat.portfolio.constants.Constants;
 import com.prabhat.portfolio.dto.ApiResponseDto;
 import com.prabhat.portfolio.dto.RequestDto;
 import com.prabhat.portfolio.dto.ResponseDto;
@@ -35,19 +36,21 @@ public class ContactServiceImpl implements ContactService {
     private final EmailService emailService;
 
 
-    @CacheEvict(value = ContactConstants.CONTACTS_CACHE, allEntries = true)
+    @CacheEvict(value = Constants.CONTACTS_CACHE, allEntries = true)
+    @Transactional
     @Override
     public ApiResponseDto contactUser(RequestDto request) {
 
-    	String email = normalize(request.getEmail()).toLowerCase();
+    	String email = normalize(request.getEmail());
+    	if(email.isBlank()) {
+    		throw new IllegalArgumentException();
+    	}
+    	email = email.toLowerCase();
 
     	String message = normalize(request.getMessage());
 
         log.info("Contact request received for email: {}", email);
 
-        if (email.isBlank()) {
-        	throw new IllegalArgumentException("Email connot be empty");
-        }
         // 1. Rate limit check
         if (!rateLimiter.isAllowed(email)) {
         	log.warn("Rate limit exceeded for email: {}", email);
@@ -59,7 +62,7 @@ public class ContactServiceImpl implements ContactService {
 
         long count = repository.countByEmailAndCreatedAtAfter(email, oneHourAgo);
 
-        if (count >= ContactConstants.HOURLY_LIMIT) {
+        if (count >= Constants.HOURLY_LIMIT) {
         	log.warn("Hourly limit exceeded for email: {}", email);
             throw new RateLimitException();
         }
@@ -72,9 +75,9 @@ public class ContactServiceImpl implements ContactService {
 
         // 4. Save entity
         Contact contact = Contact.builder()
-                .name(request.getName() != null ? request.getName().trim() : "")
+                .name(normalize(request.getName()))
                 .email(email)
-                .subject(request.getSubject() != null ? request.getSubject().trim() : "")
+                .subject(normalize(request.getSubject()))
                 .message(message)
                 .status(ContactStatus.NEW)
                 .build();
@@ -93,20 +96,25 @@ public class ContactServiceImpl implements ContactService {
 
         return ApiResponseDto.builder()
                 .success(true)
-                .message("Message sent successfully")
+                .message(Constants.MESSAGE_SENT_SUCCESS)
+                .timestamp(LocalDateTime.now())
                 .build();
     }
 
-    @Cacheable(ContactConstants.CONTACTS_CACHE)
+    @Cacheable(Constants.CONTACTS_CACHE)
     @Override
     public List<ResponseDto> getAllContacts() {
     	
     	log.info("Fetching all contacts");
     	
-        return repository.findAll()
+        List<ResponseDto> contacts = repository.findAll()
                 .stream()
                 .map(this::mapToDto)
                 .toList();
+        
+        log.info("fetched {} contacts", contacts.size());
+        
+        return contacts;
     }
     
 
@@ -116,19 +124,20 @@ public class ContactServiceImpl implements ContactService {
     	log.info("Fetching contact by id={}", id);
     	
         Contact contact = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> new NotFoundException(Constants.CONTACT_NOT_FOUND + id));
 
         return mapToDto(contact);
     }
 
-    @CacheEvict(value = ContactConstants.CONTACTS_CACHE, allEntries = true)
+    @CacheEvict(value = Constants.CONTACTS_CACHE, allEntries = true)
+    @Transactional
     @Override
     public ApiResponseDto deleteContact(Long id) {
 
     	log.info("Deleting contact with id: {}", id);
     	
         Contact contact = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() ->  new NotFoundException(Constants.CONTACT_NOT_FOUND + id));
 
         repository.delete(contact);
 
@@ -136,15 +145,17 @@ public class ContactServiceImpl implements ContactService {
         
         return ApiResponseDto.builder()
                 .success(true)
-                .message("Deleted successfully")
+                .message(Constants.DELETE_SUCCESS)
+                .timestamp(LocalDateTime.now())
                 .build();
     }
 
-    @CacheEvict(value = ContactConstants.CONTACTS_CACHE, allEntries =true)
+    @CacheEvict(value = Constants.CONTACTS_CACHE, allEntries =true)
+    @Transactional
     @Override
     public ApiResponseDto updateStatus(Long id, ContactStatus status) {
 
-    	log.info("Updating status for contact id: {}", id, status);
+    	log.info("Updating status for contact id: {}, status: {}", id, status);
     	
         Contact contact = getContact(id);
 
@@ -155,13 +166,14 @@ public class ContactServiceImpl implements ContactService {
         
         return ApiResponseDto.builder()
         		.success(true)
-        		.message("Status updated successfully")
+        		.message(Constants.STATUS_UPDATED_SUCCESS)
+        		.timestamp(LocalDateTime.now())
         		.build();
     }
 
     private Contact getContact(Long id) {
     	return repository.findById(id)
-    			.orElseThrow(() -> new NotFoundException(id));
+    			.orElseThrow(() -> new NotFoundException(Constants.CONTACT_NOT_FOUND + id));
     }
     
     private String normalize(String value) {

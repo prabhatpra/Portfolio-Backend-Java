@@ -11,7 +11,7 @@ import com.prabhat.portfolio.enums.ContactStatus;
 @Builder
 public class ResponseDto {
 
-    private long id;
+    private Long id;
     private String name;
     private String email;
     private String subject;

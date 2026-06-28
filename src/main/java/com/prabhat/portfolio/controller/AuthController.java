@@ -1,47 +1,52 @@
 package com.prabhat.portfolio.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.prabhat.portfolio.auth.dto.AdminResponse;
-import com.prabhat.portfolio.auth.dto.LoginRequest;
-import com.prabhat.portfolio.auth.dto.RegisterRequest;
+import com.prabhat.portfolio.constants.Constants;
+import com.prabhat.portfolio.dto.auth.AdminResponse;
+import com.prabhat.portfolio.dto.auth.LoginRequest;
+import com.prabhat.portfolio.dto.auth.RegisterRequest;
+import com.prabhat.portfolio.dto.auth.RegisterResponseDto;
 import com.prabhat.portfolio.service.AdminService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Slf4j
-@RequestMapping("/api/auth")
+@RequestMapping(Constants.AUTH_BASE_PATH)
 @RequiredArgsConstructor
 public class AuthController {
 
 	private final AdminService adminService;
 	
-	@PostMapping("/register")
-	public ResponseEntity<AdminResponse> register(@RequestBody RegisterRequest registerRequest){
+	@PostMapping(Constants.REGISTER_PATH)
+	public ResponseEntity<RegisterResponseDto> register(@Valid @RequestBody RegisterRequest registerRequest){
 		
 		log.info("Register API called for email: {}", registerRequest.getEmail());
 		
-		AdminResponse response = adminService.register(registerRequest);
+		RegisterResponseDto response = adminService.register(registerRequest);
 		
-		log.info("Register API completed successfully");
+		log.info("Register successful for email: {}", registerRequest.getEmail());
 		
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.CREATED)
+				             .body(response);
 	}
 	
-	@PostMapping("/login")
-	public ResponseEntity<AdminResponse> login(@RequestBody LoginRequest loginRequest){
+	@PostMapping(Constants.LOGIN_PATH)
+	public ResponseEntity<AdminResponse> login(@Valid @RequestBody LoginRequest loginRequest){
 		
 		log.info("Login API called for email: {}", loginRequest.getEmail());
 		
 		AdminResponse response = adminService.login(loginRequest);
 		
-		log.info("Login API completed successfully");
+		log.info("Login successful for email: {}", loginRequest.getEmail());
 		
 		return ResponseEntity.ok(response);
 	}

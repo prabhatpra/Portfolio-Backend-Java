@@ -6,6 +6,9 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.prabhat.portfolio.constants.Constants;
+
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -17,54 +20,58 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
+    // 1 hour
+    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 60;
 
     private Key getSigningKey() {
-    	return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
-    // Generate Token
+
+    private Claims extractClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    // Generate JWT Token
     public String generateToken(String email, String role) {
 
-    	log.debug("Generating JWT for user: {}", email);
-    	
+        log.debug("Generating JWT for user: {}", email);
+
         return Jwts.builder()
                 .setSubject(email)
-                .claim("role", role)
+                .claim(Constants.ROLE_CLAIM, role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
                 .signWith(getSigningKey())
                 .compact();
     }
 
+    // Extract Email
     public String extractEmail(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return extractClaims(token).getSubject();
     }
 
-    // Extract role
+    // Extract Role
     public String extractRole(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("role", String.class);
+        return extractClaims(token)
+                .get(Constants.ROLE_CLAIM, String.class);
     }
 
-    // Validate token
+    // Validate Token
     public boolean isTokenValid(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
+
             return true;
+
         } catch (Exception e) {
-        	log.warn("JWT validation failed: {}", e.getMessage());
+            log.warn("JWT validation failed: {}", e.getMessage());
             return false;
         }
     }

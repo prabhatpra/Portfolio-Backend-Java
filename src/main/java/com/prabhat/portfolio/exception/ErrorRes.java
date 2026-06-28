@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ErrorRes {
 
-   private String errorCode;
-   private String message;
-   private int status;
-   private LocalDateTime timestamp;
+    private String errorCode;
+    private String message;
+    private int status;
+    private LocalDateTime timestamp;
 }

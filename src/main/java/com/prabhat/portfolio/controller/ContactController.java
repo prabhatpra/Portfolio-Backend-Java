@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.prabhat.portfolio.constants.Constants;
 import com.prabhat.portfolio.dto.ApiResponseDto;
 import com.prabhat.portfolio.dto.RequestDto;
 import com.prabhat.portfolio.dto.ResponseDto;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/contacts")
+@RequestMapping(Constants.CONTACT_BASE_PATH)
 @Slf4j
 @RequiredArgsConstructor
 public class ContactController {
@@ -34,7 +35,7 @@ public class ContactController {
 
 
     @PostMapping
-    public ResponseEntity<ApiResponseDto> contact(
+    public ResponseEntity<ApiResponseDto> createContact(
             @Valid @RequestBody RequestDto requestDto) {
 
         log.info("POST /contacts API called for email: {}", requestDto.getEmail());
@@ -61,7 +62,7 @@ public class ContactController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto> getContactById(@PathVariable Long id) {
+    public ResponseEntity<ResponseDto> getContactById(@PathVariable("id") Long id) {
 
         log.info("GET /contacts/{} API called", id);
 
@@ -73,7 +74,7 @@ public class ContactController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponseDto> deleteContact(@PathVariable Long id) {
+    public ResponseEntity<ApiResponseDto> deleteContact(@PathVariable("id") Long id) {
 
         log.info("DELETE /contacts/{} API called", id);
 
@@ -86,14 +87,14 @@ public class ContactController {
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponseDto> updateStatus(
-            @PathVariable Long id,
-            @RequestParam ContactStatus status) {
+            @PathVariable("id") Long id,
+            @RequestParam("status") ContactStatus status) {
 
         log.info("PATCH /contacts/{}/status called with status: {}", id, status);
 
         ApiResponseDto response = contactService.updateStatus(id, status);
 
-        log.info("Status updated successfully for id: {}", id);
+        log.info("PATCH/ contacts/{}/status completed successfully. Status: {}", id, status);
 
         return ResponseEntity.ok(response);
     }

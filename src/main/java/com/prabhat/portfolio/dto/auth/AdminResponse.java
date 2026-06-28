@@ -1,4 +1,4 @@
-package com.prabhat.portfolio.auth.dto;
+package com.prabhat.portfolio.dto.auth;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +10,7 @@ import lombok.Data;
 public class AdminResponse {
 
 	private Long id;
+	private String userName;
 	private String email;
 	private String role;
 	private String token;

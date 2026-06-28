@@ -1,14 +1,15 @@
 package com.prabhat.portfolio.service;
 
-import com.prabhat.portfolio.auth.dto.AdminResponse;
-import com.prabhat.portfolio.auth.dto.LoginRequest;
-import com.prabhat.portfolio.auth.dto.RegisterRequest;
+import com.prabhat.portfolio.dto.auth.AdminResponse;
+import com.prabhat.portfolio.dto.auth.LoginRequest;
+import com.prabhat.portfolio.dto.auth.RegisterRequest;
+import com.prabhat.portfolio.dto.auth.RegisterResponseDto;
 
 public interface AdminService {
 	
-	public AdminResponse register(RegisterRequest request);
+	 RegisterResponseDto register(RegisterRequest request);
 
-	public AdminResponse login(LoginRequest loginRequest);
+	 AdminResponse login(LoginRequest loginRequest);
 		
 	}
 	

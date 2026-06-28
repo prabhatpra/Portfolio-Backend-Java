@@ -27,15 +27,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email)
             throws UsernameNotFoundException {
 
-        log.info("Loading user for authentication | email: {}", email);
+        log.debug("Loading user for authentication | email: {}", email);
 
         Admin admin = adminRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("Authentication failed - admin not found | email: {}", email);
-                    return new UsernameNotFoundException("Admin not found");
+                    throw new UsernameNotFoundException("Admin not found");
                 });
 
-        log.info("User loaded successfully | email: {}, role: {}",
+        log.debug("User loaded successfully | email: {}, role: {}",
                 admin.getEmail(), admin.getRole());
 
         return new User(

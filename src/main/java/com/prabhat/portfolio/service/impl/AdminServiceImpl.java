@@ -4,12 +4,18 @@ import java.time.LocalDateTime;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.prabhat.portfolio.auth.dto.AdminResponse;
-import com.prabhat.portfolio.auth.dto.LoginRequest;
-import com.prabhat.portfolio.auth.dto.RegisterRequest;
+import com.prabhat.portfolio.constants.Constants;
+import com.prabhat.portfolio.dto.auth.AdminResponse;
+import com.prabhat.portfolio.dto.auth.LoginRequest;
+import com.prabhat.portfolio.dto.auth.RegisterRequest;
+import com.prabhat.portfolio.dto.auth.RegisterResponseDto;
 import com.prabhat.portfolio.entity.Admin;
 import com.prabhat.portfolio.enums.Role;
+import com.prabhat.portfolio.exception.DuplicateEmailException;
+import com.prabhat.portfolio.exception.InvalidCredentialException;
+import com.prabhat.portfolio.exception.PasswordMismatchException;
 import com.prabhat.portfolio.repository.AdminRepository;
 import com.prabhat.portfolio.security.JwtService;
 import com.prabhat.portfolio.service.AdminService;
@@ -20,23 +26,29 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AdminServiceImple implements AdminService {
+public class AdminServiceImpl implements AdminService {
 
 	private final AdminRepository adminRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtService jwtService;
 	
+	@Transactional
 	@Override
-	public AdminResponse register(RegisterRequest request) {
+	public RegisterResponseDto register(RegisterRequest request) {
 		
 		log.info("Register request received for email: {}", request.getEmail());
 		
-		if(adminRepository.findByEmail(request.getEmail()).isPresent()) {
+		if(!request.getPassword().equals(request.getConfirmPassword())) {
+			throw new PasswordMismatchException();
+		}
+		
+		if(adminRepository.existsByEmail(request.getEmail())) {
 			log.warn("Email already exists: {}", request.getEmail());
-			throw new RuntimeException("Email already exists");
+			throw new DuplicateEmailException();
 		}
 		
 		Admin admin = Admin.builder()
+				.userName(request.getUserName())
 				.email(request.getEmail())
 				.password(passwordEncoder.encode(request.getPassword()))
 				.role(Role.ROLE_ADMIN)
@@ -46,13 +58,13 @@ public class AdminServiceImple implements AdminService {
 		
 		log.info("Admin registered successfully with id: {}", savedAdmin.getId());
 		
-		return AdminResponse.builder()
+		return RegisterResponseDto.builder()
 				.id(savedAdmin.getId())
 				.email(savedAdmin.getEmail())
-				.role(savedAdmin.getRole().name())
+				.message(Constants.REGISTER_SUCCESS)
 				.build();
 	}
-	
+	@Transactional
 	@Override
 	public AdminResponse login(LoginRequest loginRequest) {
 		
@@ -60,13 +72,13 @@ public class AdminServiceImple implements AdminService {
 		
 		Admin admin = adminRepository.findByEmail(loginRequest.getEmail())
 				.orElseThrow(() -> {
-					log.error("Admin not found with email: {}", loginRequest.getEmail());
-				 return new RuntimeException("Admin not found");
+					log.warn("Invalid login attempt for email: {}", loginRequest.getEmail());
+				 return new InvalidCredentialException();
 				});
 		
 		if(!passwordEncoder.matches(loginRequest.getPassword(), admin.getPassword())) {
 			log.warn("Invalid password for email: {}", loginRequest.getEmail());
-			throw new RuntimeException("Invalid Password");
+			throw new InvalidCredentialException();
 		}
 		
 		admin.setLastLogin(LocalDateTime.now());
@@ -74,13 +86,15 @@ public class AdminServiceImple implements AdminService {
 		
 		log.info("Admin logged in successfully: {}", admin.getEmail());
 		
-		String token = jwtService.generateToken(admin.getEmail(), admin.getRole().name());
+		String accessToken = jwtService.generateToken(admin.getEmail(), admin.getRole().name());
+		
 		
 		return AdminResponse.builder()
 				.id(admin.getId())
+				.userName(admin.getUserName())
 				.email(admin.getEmail())
 				.role(admin.getRole().name())
-				.token(token)
+				.token(accessToken)
 				.lastLogin(admin.getLastLogin())
 				.build();
 	}
