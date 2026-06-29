@@ -3,6 +3,7 @@
 
 # Log files
 *.log
+logs/
 
 # Package files
 *.jar
@@ -46,9 +47,11 @@ target/
 build/
 dist/
 
-# Environment files (agar future me use karo)
+# Environment files
 .env
 .env.*
+application-local.properties
+application-dev.properties
 
 # OS files
 .DS_Store
