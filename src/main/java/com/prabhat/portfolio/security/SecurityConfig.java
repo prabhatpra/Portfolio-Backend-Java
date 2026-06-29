@@ -38,10 +38,10 @@ public class SecurityConfig {
             			         ).permitAll()
             	
                 .requestMatchers(HttpMethod.POST, Constants.CONTACT_BASE_PATH)
-                .permitAll()  
+                .authenticated()  
                 
                 .requestMatchers(Constants.CONTACT_BASE_PATH +"/**")
-                .hasAuthority("ROLE_ADMIN") 
+                .hasRole("ADMIN") 
                 
                 .anyRequest().authenticated()
             )

@@ -26,16 +26,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "admin",
+@Table(name = "users",
        indexes = {
-    		   @Index(name = "idx_admin_email", columnList = "email")
+    		   @Index(name = "idx_user_email", columnList = "email")
        })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Admin {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -80,7 +80,7 @@ public class Admin {
         this.updatedAt = now;
         
         if(this.role == null) {
-        	this.role = Role.ROLE_ADMIN;
+        	this.role = Role.ROLE_USER;
         }
     }
 

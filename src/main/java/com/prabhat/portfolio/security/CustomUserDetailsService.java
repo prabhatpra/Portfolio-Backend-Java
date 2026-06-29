@@ -1,16 +1,14 @@
 package com.prabhat.portfolio.security;
 
-
 import java.util.List;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.prabhat.portfolio.entity.Admin;
+import com.prabhat.portfolio.entity.User;
 import com.prabhat.portfolio.repository.AdminRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,19 +27,21 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         log.debug("Loading user for authentication | email: {}", email);
 
-        Admin admin = adminRepository.findByEmail(email)
+      
+        User user = adminRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    log.warn("Authentication failed - admin not found | email: {}", email);
-                    throw new UsernameNotFoundException("Admin not found");
+                    log.warn("Authentication failed - user not found | email: {}", email);
+                    throw new UsernameNotFoundException("User not found");
                 });
 
         log.debug("User loaded successfully | email: {}, role: {}",
-                admin.getEmail(), admin.getRole());
+                user.getEmail(), user.getRole());
 
-        return new User(
-                admin.getEmail(),
-                admin.getPassword(),
-                List.of(new SimpleGrantedAuthority(admin.getRole().name()))
+        
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                List.of(new SimpleGrantedAuthority(user.getRole().name()))
         );
     }
 }

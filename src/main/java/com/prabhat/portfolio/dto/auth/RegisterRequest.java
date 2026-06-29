@@ -33,4 +33,7 @@ public class RegisterRequest {
     @NotBlank(message = "Confirm Password is required")
     @Size(min = 8, max = 64, message = " confirm Password must be between 8 and 64 characters")
     private String confirmPassword;
+    
+    @Size(max = 100, message = "Admin code must not exceed 100 characters")
+    private String adminCode;
 }

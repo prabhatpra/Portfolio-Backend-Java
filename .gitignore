@@ -56,3 +56,4 @@ application-dev.properties
 # OS files
 .DS_Store
 Thumbs.db
+application-dev.properites git add .gitignore
