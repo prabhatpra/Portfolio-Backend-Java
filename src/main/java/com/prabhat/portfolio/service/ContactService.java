@@ -2,10 +2,10 @@ package com.prabhat.portfolio.service;
 
 import java.util.List;
 
-import com.prabhat.portfolio.dto.ApiResponseDto;
-import com.prabhat.portfolio.dto.RequestDto;
-import com.prabhat.portfolio.dto.ResponseDto;
-import com.prabhat.portfolio.enums.ContactStatus;
+import com.prabhat.portfolio.contact.dto.ApiResponseDto;
+import com.prabhat.portfolio.contact.dto.ReplyRequestDto;
+import com.prabhat.portfolio.contact.dto.RequestDto;
+import com.prabhat.portfolio.contact.dto.ResponseDto;
 
 public interface ContactService {
 
@@ -17,6 +17,9 @@ public interface ContactService {
 	
 	ApiResponseDto deleteContact(Long id);
 	
-	ApiResponseDto updateStatus(Long id, ContactStatus status);
+	ApiResponseDto markAsRead(Long id);
+	
+	ApiResponseDto replyContact(Long id, ReplyRequestDto request);
+	
 
 }

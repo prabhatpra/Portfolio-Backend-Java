@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.prabhat.portfolio.constants.Constants;
-import com.prabhat.portfolio.dto.auth.AdminResponse;
-import com.prabhat.portfolio.dto.auth.LoginRequest;
-import com.prabhat.portfolio.dto.auth.RegisterRequest;
-import com.prabhat.portfolio.dto.auth.RegisterResponseDto;
+import com.prabhat.portfolio.contact.dto.auth.AdminResponse;
+import com.prabhat.portfolio.contact.dto.auth.LoginRequest;
+import com.prabhat.portfolio.contact.dto.auth.RegisterRequest;
+import com.prabhat.portfolio.contact.dto.auth.RegisterResponseDto;
 import com.prabhat.portfolio.entity.User;
 import com.prabhat.portfolio.enums.Role;
 import com.prabhat.portfolio.exception.DuplicateEmailException;

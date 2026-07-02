@@ -53,13 +53,59 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    private String buildAdminMessage(String name, String email, String subject, String message) {
-        return String.format(
-                Constants.BODY_FORMAT,
-                name,
-                email,
-                subject,
-                message
-        );
+    
+    @Async
+    @Override
+    public void sendReplyMail(String toEmail, String subject, String replyMessage) {
+
+        log.info("Preparing reply email for user: {}", toEmail);
+
+        try {
+
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(toEmail)
+                    .subject(Constants.REPLY_SUBJECT_PREFIX+ subject)
+                    .text(buildReplyMessage(replyMessage))
+                    .build();
+
+            resend.emails().send(params);
+
+            log.info("Reply email sent successfully to user: {}", toEmail);
+
+        } catch (Exception e) {
+            log.error("Failed to send reply email to user: {}", toEmail, e);
+            
+            throw new RuntimeException("Failed to send reply email", e);
+        }
     }
+    
+    private String buildAdminMessage(String name, String email, 
+    		                   String subject, String message) {
+    	
+    	return String.format(
+    			Constants.BODY_FORMAT,
+    			name,
+    			email,
+    			subject,
+    			message
+    			
+    		);
+    	
+    }
+    
+    private String buildReplyMessage(String replyMessage) {
+    	return String.format("""
+    
+    Hello,
+    
+    %s
+    
+    Best Regards,
+    Prabhat Prajapati
+    
+    This is a reply to your message submitted my portfolio website.
+   	""", replyMessage);
+    }
+    
 }

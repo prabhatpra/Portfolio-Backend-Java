@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.prabhat.portfolio.constants.Constants;
-import com.prabhat.portfolio.dto.ApiResponseDto;
-import com.prabhat.portfolio.dto.RequestDto;
-import com.prabhat.portfolio.dto.ResponseDto;
+import com.prabhat.portfolio.contact.dto.ApiResponseDto;
+import com.prabhat.portfolio.contact.dto.ReplyRequestDto;
+import com.prabhat.portfolio.contact.dto.RequestDto;
+import com.prabhat.portfolio.contact.dto.ResponseDto;
 import com.prabhat.portfolio.entity.Contact;
 import com.prabhat.portfolio.enums.ContactStatus;
 import com.prabhat.portfolio.exception.DuplicateMessageException;
@@ -43,7 +44,8 @@ public class ContactServiceImpl implements ContactService {
 
     	String email = normalize(request.getEmail());
     	if(email.isBlank()) {
-    		throw new IllegalArgumentException();
+    		throw new IllegalArgumentException("Email cannot be blank");
+    		
     	}
     	email = email.toLowerCase();
 
@@ -97,6 +99,7 @@ public class ContactServiceImpl implements ContactService {
         return ApiResponseDto.builder()
                 .success(true)
                 .message(Constants.MESSAGE_SENT_SUCCESS)
+                .data(mapToDto(saved))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -123,10 +126,8 @@ public class ContactServiceImpl implements ContactService {
 
     	log.info("Fetching contact by id={}", id);
     	
-        Contact contact = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException(Constants.CONTACT_NOT_FOUND + id));
 
-        return mapToDto(contact);
+        return mapToDto(getContact(id));
     }
 
     @CacheEvict(value = Constants.CONTACTS_CACHE, allEntries = true)
@@ -136,10 +137,8 @@ public class ContactServiceImpl implements ContactService {
 
     	log.info("Deleting contact with id: {}", id);
     	
-        Contact contact = repository.findById(id)
-                .orElseThrow(() ->  new NotFoundException(Constants.CONTACT_NOT_FOUND + id));
 
-        repository.delete(contact);
+        repository.delete(getContact(id));
 
         log.info("Contact deleted successfully with id: {}", id);
         
@@ -149,46 +148,76 @@ public class ContactServiceImpl implements ContactService {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-
-    @CacheEvict(value = Constants.CONTACTS_CACHE, allEntries =true)
-    @Transactional
     @Override
-    public ApiResponseDto updateStatus(Long id, ContactStatus status) {
-
-    	log.info("Updating status for contact id: {}, status: {}", id, status);
+    @Transactional
+    @CacheEvict(value = Constants.CONTACTS_CACHE, allEntries = true)
+    public ApiResponseDto markAsRead(Long id) {
+    	log.info("Marking contact as read. Id={}", id);
     	
-        Contact contact = getContact(id);
-
-        contact.setStatus(status);
-        repository.save(contact);
-        
-        log.info("Status updated successfully for contact id: {}", id);
-        
-        return ApiResponseDto.builder()
-        		.success(true)
-        		.message(Constants.STATUS_UPDATED_SUCCESS)
-        		.timestamp(LocalDateTime.now())
-        		.build();
+    	Contact contact = getContact(id);
+    	
+    	contact.setStatus(ContactStatus.READ);
+    	
+    	repository.save(contact);
+    	
+    	return ApiResponseDto.builder()
+                   .success(true)
+                   .message(Constants.CONTACT_MARKED_AS_READ)
+                   .timestamp(LocalDateTime.now())
+                   .build();
     }
 
+    
+    @Override
+    @Transactional
+    @CacheEvict(value = Constants.CONTACTS_CACHE, allEntries = true)
+    public ApiResponseDto replyContact(Long id, ReplyRequestDto request) {
+
+        log.info("Reply request received for contact id={}", id);
+
+        Contact contact = getContact(id);
+        
+        emailService.sendReplyMail(
+        		contact.getEmail(),
+        		contact.getSubject(),
+        		request.getReplyMessage()
+        		);
+
+        contact.setReplyMessage(request.getReplyMessage());
+        contact.setStatus(ContactStatus.REPLIED);
+        contact.setRepliedAt(LocalDateTime.now());
+
+
+        repository.save(contact);
+
+        log.info("Reply sent successfully for contact id={}", id);
+
+        return ApiResponseDto.builder()
+                .success(true)
+                .message(Constants.REPLY_SENT_SUCCESS)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+    
     private Contact getContact(Long id) {
-    	return repository.findById(id)
-    			.orElseThrow(() -> new NotFoundException(Constants.CONTACT_NOT_FOUND + id));
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException(Constants.CONTACT_NOT_FOUND + id));
     }
     
     private String normalize(String value) {
     	return value == null ? "" : value.trim();
     }
     
-    private ResponseDto mapToDto(Contact c) {
-        return ResponseDto.builder()
-                .id(c.getId())
-                .name(c.getName())
-                .email(c.getEmail())
-                .subject(c.getSubject())
-                .message(c.getMessage())
-                .status(c.getStatus())
-                .createdAt(c.getCreatedAt())
-                .build();
+    private ResponseDto mapToDto(Contact contact) {
+    	return ResponseDto.builder()
+    			.id(contact.getId())
+    			.name(contact.getName())
+    			.email(contact.getEmail())
+    			.subject(contact.getSubject())
+    			.message(contact.getMessage())
+    			.status(contact.getStatus())
+    			.createdAt(contact.getCreatedAt())
+    			.build();
     }
 }

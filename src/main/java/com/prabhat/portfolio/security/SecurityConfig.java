@@ -33,15 +33,20 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
             .authorizeHttpRequests(auth -> auth
+            		
+            	.requestMatchers(
+            			"/swagger-ui/**",
+            			"/v3/api-docs/**").permitAll()
+            		
             	.requestMatchers(Constants.AUTH_BASE_PATH + Constants.LOGIN_PATH,
             			         Constants.AUTH_BASE_PATH + Constants.REGISTER_PATH
             			         ).permitAll()
             	
                 .requestMatchers(HttpMethod.POST, Constants.CONTACT_BASE_PATH)
-                .authenticated()  
-                
-                .requestMatchers(Constants.CONTACT_BASE_PATH +"/**")
-                .hasRole("ADMIN") 
+                .permitAll()  
+                                
+                .requestMatchers(Constants.ADMIN_BASE_PATH + "/**")
+                .hasRole("ADMIN")
                 
                 .anyRequest().authenticated()
             )

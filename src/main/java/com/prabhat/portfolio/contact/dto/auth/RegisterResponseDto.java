@@ -1,4 +1,4 @@
-package com.prabhat.portfolio.dto.auth;
+package com.prabhat.portfolio.contact.dto.auth;
 
 import lombok.Builder;
 import lombok.Data;

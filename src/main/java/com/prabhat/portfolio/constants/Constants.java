@@ -28,12 +28,14 @@ public final class Constants {
  // Base API Paths
     public static final String  AUTH_BASE_PATH = "/api/auth";
     public static final String CONTACT_BASE_PATH = "/api/contacts";
+    public static final String ADMIN_BASE_PATH = "/api/admin/contacts";
     
  // Auth Endpoints
     public static final String LOGIN_PATH = "/login";
     public static final String REGISTER_PATH = "/register";
     
     public static final String SUBJECT_FORMAT = "Portfolio Contact: %s (%s)";
+    public static final String REPLY_SUBJECT_PREFIX = "Re: ";
     public static final String BODY_FORMAT = 
     		"Name: %s\n" +
             "Email: %s\n" +
@@ -43,5 +45,7 @@ public final class Constants {
     public static final String MESSAGE_SENT_SUCCESS = "Message sent successfully";
     public static final String DELETE_SUCCESS = "Deleted successfully";
     public static final String STATUS_UPDATED_SUCCESS = "Status updated successfully";
+    public static final String REPLY_SENT_SUCCESS = "Reply sent successfully";
     public static final String CONTACT_NOT_FOUND = "Contact not found with id: ";
+    public static final String CONTACT_MARKED_AS_READ = "Contact marked as read";
 }

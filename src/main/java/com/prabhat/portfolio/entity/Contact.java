@@ -64,10 +64,17 @@ public class Contact {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ContactStatus status;
+    
+    @Column(columnDefinition = "TEXT")
+    private String replyMessage;
+    
+    private LocalDateTime readAt;
+    
+    private LocalDateTime repliedAt;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
+    
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
