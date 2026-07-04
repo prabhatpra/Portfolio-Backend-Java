@@ -22,7 +22,7 @@ Database
 
 # 🛠 Tech Stack
 
-* ☕ Java 21
+* ☕ Java 17
 * 🚀 Spring Boot 3.3.5
 * 🔐 Spring Security
 * 🔑 JWT Authentication & Authorization
