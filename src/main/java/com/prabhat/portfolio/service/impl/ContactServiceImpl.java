@@ -176,10 +176,12 @@ public class ContactServiceImpl implements ContactService {
 
         Contact contact = getContact(id);
         
+        String replyMessage = normalize(request.getReplyMessage());
+        
         emailService.sendReplyMail(
         		contact.getEmail(),
         		contact.getSubject(),
-        		request.getReplyMessage()
+        		replyMessage
         		);
 
         contact.setReplyMessage(request.getReplyMessage());
