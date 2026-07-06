@@ -42,13 +42,12 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ApiResponseDto contactUser(RequestDto request) {
 
-    	String email = normalize(request.getEmail());
-    	if(email.isBlank()) {
-    		throw new IllegalArgumentException("Email cannot be blank");
-    		
-    	}
-    	email = email.toLowerCase();
+    	String name = normalize(request.getName());
+    	
+        String email = normalize(request.getEmail().toLowerCase());
 
+        String subject = normalize(request.getSubject());
+        
     	String message = normalize(request.getMessage());
 
         log.info("Contact request received for email: {}", email);
@@ -77,9 +76,9 @@ public class ContactServiceImpl implements ContactService {
 
         // 4. Save entity
         Contact contact = Contact.builder()
-                .name(normalize(request.getName()))
+                .name(name)
                 .email(email)
-                .subject(normalize(request.getSubject()))
+                .subject(subject)
                 .message(message)
                 .status(ContactStatus.NEW)
                 .build();
