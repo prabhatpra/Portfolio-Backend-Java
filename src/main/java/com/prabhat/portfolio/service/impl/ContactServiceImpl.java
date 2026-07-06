@@ -44,7 +44,7 @@ public class ContactServiceImpl implements ContactService {
 
     	String name = normalize(request.getName());
     	
-        String email = normalize(request.getEmail().toLowerCase());
+        String email = normalize(request.getEmail()).toLowerCase();
 
         String subject = normalize(request.getSubject());
         
