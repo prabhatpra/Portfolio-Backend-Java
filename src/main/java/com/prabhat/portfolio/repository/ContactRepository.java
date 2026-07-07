@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.prabhat.portfolio.entity.Contact;
 import com.prabhat.portfolio.enums.ContactStatus;
+import com.prabhat.portfolio.enums.EmailStatus;
 
 public interface ContactRepository extends JpaRepository<Contact, Long> {
 
@@ -16,7 +17,7 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
 	
 	 boolean existsByEmailAndMessage(String email, String message);
 	
-	
+	 List<Contact> findByEmailStatusAndEmailRetryCountLessThan(EmailStatus emailStatus, int retryCount);
 	
 	 long countByEmailAndCreatedAtAfter(String email, LocalDateTime time);
 	

@@ -5,6 +5,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.prabhat.portfolio.constants.Constants;
+import com.prabhat.portfolio.entity.Contact;
+import com.prabhat.portfolio.enums.EmailStatus;
+import com.prabhat.portfolio.repository.ContactRepository;
 import com.prabhat.portfolio.service.EmailService;
 import com.resend.Resend;
 import com.resend.services.emails.model.CreateEmailOptions;
@@ -18,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailServiceImpl implements EmailService {
 
     private final Resend resend;
+    private final ContactRepository contactRepository;
     
     @Value("${portfolio.admin.email}")
     private String adminEmail;
@@ -27,29 +31,42 @@ public class EmailServiceImpl implements EmailService {
 
     @Async
     @Override
-    public void sendContactMail(String name, String email, String subject, String message) {
+    public void sendContactMail(Contact contact) {
 
-        log.info("Preparing admin email for user: {}", email);
-
+        log.info("Preparing admin email for user: {}", contact.getEmail());
         try {
             CreateEmailOptions params = CreateEmailOptions.builder()
                     .from(fromEmail)
                     .to(adminEmail)
-                    .replyTo(email)
+                    .replyTo(contact.getEmail())
                     .subject(String.format(
                             Constants.SUBJECT_FORMAT,
-                            subject,
-                            email
+                            contact.getSubject(),
+                            contact.getEmail()
                     ))
-                    .text(buildAdminMessage(name, email, subject, message))
+                    .text(buildAdminMessage(
+                    		contact.getName(),
+                    		contact.getEmail(), 
+                    		contact.getSubject(), 
+                    		contact.getMessage()
+              		))
                     .build();
 
-    var response = resend.emails().send(params);
-
-            log.info("Admin email sent successfully for user: {}", email);
+            resend.emails().send(params);
+            contact.setEmailStatus(EmailStatus.SENT);
+            log.info("Admin email sent successfully for user: {}", contact.getEmail());
 
         } catch (Exception e) {
-            log.error("Failed to send admin email for user: {}", email, e);
+        	contact.setEmailStatus(EmailStatus.FAILED);
+        	contact.setEmailRetryCount(contact.getEmailRetryCount() + 1);
+            log.error("Failed to send admin email for contact id={}", contact.getId(), e);
+            
+        } finally {
+        	try {
+        	contactRepository.save(contact);
+        } catch (Exception ex) {
+        	log.error("Failed to update email status for contact id={}", contact.getId(), ex);
+          }
         }
     }
 
@@ -61,28 +78,21 @@ public class EmailServiceImpl implements EmailService {
         log.info("Preparing reply email for user: {}", toEmail);
 
         try {
-
             CreateEmailOptions params = CreateEmailOptions.builder()
                     .from(fromEmail)
                     .to(toEmail)
-                    .subject(Constants.REPLY_SUBJECT_PREFIX+ subject)
+                    .subject(Constants.REPLY_SUBJECT_PREFIX + subject)
                     .text(buildReplyMessage(replyMessage))
                     .build();
-
             resend.emails().send(params);
-
             log.info("Reply email sent successfully to user: {}", toEmail);
-
         } catch (Exception e) {
             log.error("Failed to send reply email to user: {}", toEmail, e);
-            
-            throw new RuntimeException("Failed to send reply email", e);
         }
     }
     
     private String buildAdminMessage(String name, String email, 
     		                   String subject, String message) {
-    	
     	return String.format(
     			Constants.BODY_FORMAT,
     			name,
@@ -91,7 +101,6 @@ public class EmailServiceImpl implements EmailService {
     			message
     			
     		);
-    	
     }
     
     private String buildReplyMessage(String replyMessage) {

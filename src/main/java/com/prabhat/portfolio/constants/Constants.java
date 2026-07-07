@@ -8,7 +8,7 @@ public final class Constants {
 	
 	//Contact
 	public static final int HOURLY_LIMIT = 3;
-    public static final long TIME_WINDOW = 10 * 60 * 1000;   
+    public static final long TIME_WINDOW = 10 * 60 * 1000L;   
     public static final String CONTACTS_CACHE = "contacts";
     
     public static final long RATE_LIMITER_CLEANUP_INTERVAL = 60_000L;
@@ -48,4 +48,8 @@ public final class Constants {
     public static final String REPLY_SENT_SUCCESS = "Reply sent successfully";
     public static final String CONTACT_NOT_FOUND = "Contact not found with id: ";
     public static final String CONTACT_MARKED_AS_READ = "Contact marked as read";
+    
+    //Scheduled
+    public static final long EMAIL_RETRY_DELAY = 10 * 60 * 1000L;
+    public static final int MAX_EMAIL_RETRY = 3;
 }

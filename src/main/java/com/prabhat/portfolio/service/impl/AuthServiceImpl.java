@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AdminServiceImpl implements AdminService {
+public class AuthServiceImpl implements AdminService {
 
 	private final AdminRepository adminRepository;
 	private final PasswordEncoder passwordEncoder;

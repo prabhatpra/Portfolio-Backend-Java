@@ -3,6 +3,7 @@ package com.prabhat.portfolio.entity;
 import java.time.LocalDateTime;
 
 import com.prabhat.portfolio.enums.ContactStatus;
+import com.prabhat.portfolio.enums.EmailStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -65,6 +66,13 @@ public class Contact {
     @Column(nullable = false, length = 20)
     private ContactStatus status;
     
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private EmailStatus emailStatus;
+    
+    @Column(nullable = false)
+    private Integer emailRetryCount;
+    
     @Column(columnDefinition = "TEXT")
     private String replyMessage;
     
@@ -88,6 +96,14 @@ public class Contact {
 
         if (this.status == null) {
             this.status = ContactStatus.NEW;
+        }
+        
+        if (this.emailStatus == null) {
+        	this.emailStatus = EmailStatus.PENDING;
+        }
+        
+        if(this.emailRetryCount == null) {
+        	this.emailRetryCount = 0;
         }
     }
 
