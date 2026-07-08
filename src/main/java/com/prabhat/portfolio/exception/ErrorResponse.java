@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorRes {
+public class ErrorResponse {
 
+	private boolean success;
     private String errorCode;
     private String message;
     private int status;

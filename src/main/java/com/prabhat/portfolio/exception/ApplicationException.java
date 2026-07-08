@@ -11,14 +11,14 @@ public class ApplicationException extends RuntimeException {
     private final HttpStatus httpStatus;
 
     // Default message from ErrorCodeEnum
-    public ApplicationException(ErrorCodeEnum error) {
+    public ApplicationException(ErrorCode error) {
         super(error.getErrorMessage());
         this.errorCode = error.getErrorCode();
         this.httpStatus = error.getHttpStatus();
     }
 
     // Custom message (optional)
-    public ApplicationException(String message, ErrorCodeEnum error) {
+    public ApplicationException(String message, ErrorCode error) {
         super(message);
         this.errorCode = error.getErrorCode();
         this.httpStatus = error.getHttpStatus();

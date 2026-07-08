@@ -3,6 +3,6 @@ package com.prabhat.portfolio.exception;
 public class UnauthorizedException extends ApplicationException {
 
     public UnauthorizedException() {
-        super(ErrorCodeEnum.UNAUTHORIZED);
+        super(ErrorCode.UNAUTHORIZED);
     }
 }

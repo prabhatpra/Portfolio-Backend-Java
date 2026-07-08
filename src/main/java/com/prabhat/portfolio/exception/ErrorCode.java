@@ -7,11 +7,11 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum ErrorCodeEnum {
+public enum ErrorCode {
 
 	 // Contact
     DUPLICATE_MESSAGE("CNT_001", "Duplicate message found", HttpStatus.CONFLICT),
-    NOT_FOUND("CNT_002", "Contact not found", HttpStatus.NOT_FOUND),
+    CONTACT_NOT_FOUND("CNT_002", "Contact not found", HttpStatus.NOT_FOUND),
     RATE_LIMIT_EXCEEDED("CNT_003", "Too many requests", HttpStatus.TOO_MANY_REQUESTS),
     VALIDATION_ERROR("GEN_002", "Validation failed", HttpStatus.BAD_REQUEST),
 
@@ -25,7 +25,7 @@ public enum ErrorCodeEnum {
     FORBIDDEN("AUTH_007", "Access denied", HttpStatus.FORBIDDEN),
 
     // Generic
-    GENERIC_ERROR("GEN_001", "Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+    INTERNAL_SERVER_ERROR("GEN_001", "Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String errorCode;
     private final String errorMessage;

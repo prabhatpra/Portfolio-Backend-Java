@@ -2,7 +2,6 @@ package com.prabhat.portfolio.exception;
 
 import java.time.LocalDateTime;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,64 +9,68 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import lombok.extern.slf4j.Slf4j;
 
-    @RestControllerAdvice
-    @Slf4j
-    public class GlobalExceptionHandler {
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
 
-        @ExceptionHandler(ApplicationException.class)
-        public ResponseEntity<ErrorRes> handleApplicationException(ApplicationException ex) {
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ErrorResponse> handleApplicationException(ApplicationException ex) {
 
-            log.error("ApplicationException occurred: {}", ex.getMessage());
+        log.error("ApplicationException occurred: {}", ex.getMessage());
 
-            ErrorRes response = ErrorRes.builder()
-                    .errorCode(ex.getErrorCode())
-                    .message(ex.getMessage())
-                    .status(ex.getHttpStatus().value())
-                    .timestamp(LocalDateTime.now())
-                    .build();
+        ErrorResponse response = ErrorResponse.builder()
+        		.success(false)
+                .errorCode(ex.getErrorCode())
+                .message(ex.getMessage())
+                .status(ex.getHttpStatus().value())
+                .timestamp(LocalDateTime.now())
+                .build();
 
-            return ResponseEntity
-                    .status(ex.getHttpStatus())
-                    .body(response);
-        }
+        return ResponseEntity
+                .status(ex.getHttpStatus())
+                .body(response);
+    }
 
-        @ExceptionHandler(Exception.class)
-        public ResponseEntity<ErrorRes> handleGenericException(Exception ex) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
 
-            log.error("Unexpected exception occurred", ex);
+        String message = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + " : " + error.getDefaultMessage())
+                .reduce((a, b) -> a + ", " + b)
+                .orElse(ErrorCode.VALIDATION_ERROR.getErrorMessage());
 
-            ErrorRes response = ErrorRes.builder()
-                    .errorCode(ErrorCodeEnum.GENERIC_ERROR.getErrorCode())
-                    .message(ErrorCodeEnum.GENERIC_ERROR.getErrorMessage())
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .timestamp(LocalDateTime.now())
-                    .build();
+        log.error("Validation error: {}", message);
 
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(response);
-        }
-        
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<ErrorRes> handleValidationException(MethodArgumentNotValidException ex) {
+        ErrorResponse response = ErrorResponse.builder()
+        		.success(false)
+                .errorCode(ErrorCode.VALIDATION_ERROR.getErrorCode())
+                .message(message)
+                .status(ErrorCode.VALIDATION_ERROR.getHttpStatus().value())
+                .timestamp(LocalDateTime.now())
+                .build();
 
-            String message = ex.getBindingResult()
-                    .getFieldErrors()
-                    .stream()
-                    .map(error -> error.getField() + " : " + error.getDefaultMessage())
-                    .reduce((a, b) -> a + ", " + b)
-                    .orElse("Validation error");
+        return ResponseEntity
+                .status(ErrorCode.VALIDATION_ERROR.getHttpStatus())
+                .body(response);
+    }
 
-            log.error("Validation error: {}", message);
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
 
-            ErrorRes response = ErrorRes.builder()
-                    .errorCode("VALIDATION_ERROR")
-                    .message(message)
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .timestamp(LocalDateTime.now())
-                    .build();
+        log.error("Unexpected exception occurred", ex);
 
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-    
+        ErrorResponse response = ErrorResponse.builder()
+        		.success(false)
+                .errorCode(ErrorCode.INTERNAL_SERVER_ERROR.getErrorCode())
+                .message(ErrorCode.INTERNAL_SERVER_ERROR.getErrorMessage())
+                .status(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus().value())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity
+                .status(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+                .body(response);
+    }
 }
