@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.prabhat.portfolio.constants.Constants;
-import com.prabhat.portfolio.contact.dto.auth.AdminResponse;
-import com.prabhat.portfolio.contact.dto.auth.LoginRequest;
-import com.prabhat.portfolio.contact.dto.auth.RegisterRequest;
-import com.prabhat.portfolio.contact.dto.auth.RegisterResponseDto;
+import com.prabhat.portfolio.dto.auth.AdminResponse;
+import com.prabhat.portfolio.dto.auth.LoginRequest;
+import com.prabhat.portfolio.dto.auth.RegisterRequest;
+import com.prabhat.portfolio.dto.auth.RegisterResponseDto;
 import com.prabhat.portfolio.service.AdminService;
 
 import jakarta.validation.Valid;

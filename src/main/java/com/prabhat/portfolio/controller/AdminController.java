@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.prabhat.portfolio.constants.Constants;
-import com.prabhat.portfolio.contact.dto.ApiResponseDto;
-import com.prabhat.portfolio.contact.dto.ReplyRequestDto;
-import com.prabhat.portfolio.contact.dto.ResponseDto;
+import com.prabhat.portfolio.dto.contact.ApiResponseDto;
+import com.prabhat.portfolio.dto.contact.ReplyRequestDto;
+import com.prabhat.portfolio.dto.contact.ResponseDto;
 import com.prabhat.portfolio.service.ContactService;
 
 import jakarta.validation.Valid;

@@ -2,10 +2,10 @@ package com.prabhat.portfolio.service;
 
 import java.util.List;
 
-import com.prabhat.portfolio.contact.dto.ApiResponseDto;
-import com.prabhat.portfolio.contact.dto.ReplyRequestDto;
-import com.prabhat.portfolio.contact.dto.RequestDto;
-import com.prabhat.portfolio.contact.dto.ResponseDto;
+import com.prabhat.portfolio.dto.contact.ApiResponseDto;
+import com.prabhat.portfolio.dto.contact.ReplyRequestDto;
+import com.prabhat.portfolio.dto.contact.RequestDto;
+import com.prabhat.portfolio.dto.contact.ResponseDto;
 
 public interface ContactService {
 

@@ -1,4 +1,4 @@
-package com.prabhat.portfolio.contact.dto;
+package com.prabhat.portfolio.dto.contact;
 
 import lombok.Builder;
 import lombok.Data;

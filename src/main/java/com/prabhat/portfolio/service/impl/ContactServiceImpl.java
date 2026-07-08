@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.prabhat.portfolio.constants.Constants;
-import com.prabhat.portfolio.contact.dto.ApiResponseDto;
-import com.prabhat.portfolio.contact.dto.ReplyRequestDto;
-import com.prabhat.portfolio.contact.dto.RequestDto;
-import com.prabhat.portfolio.contact.dto.ResponseDto;
+import com.prabhat.portfolio.dto.contact.ApiResponseDto;
+import com.prabhat.portfolio.dto.contact.ReplyRequestDto;
+import com.prabhat.portfolio.dto.contact.RequestDto;
+import com.prabhat.portfolio.dto.contact.ResponseDto;
 import com.prabhat.portfolio.entity.Contact;
 import com.prabhat.portfolio.enums.ContactStatus;
 import com.prabhat.portfolio.exception.DuplicateMessageException;
