@@ -18,6 +18,7 @@ import com.prabhat.portfolio.enums.ContactStatus;
 import com.prabhat.portfolio.exception.DuplicateMessageException;
 import com.prabhat.portfolio.exception.NotFoundException;
 import com.prabhat.portfolio.exception.RateLimitException;
+import com.prabhat.portfolio.exception.ValidationException;
 import com.prabhat.portfolio.repository.ContactRepository;
 import com.prabhat.portfolio.service.ContactService;
 import com.prabhat.portfolio.service.EmailService;
@@ -177,7 +178,7 @@ public class ContactServiceImpl implements ContactService {
 
     private String normalize(String value, String fieldName) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " can't be empty");
+            throw new ValidationException(fieldName + " can't be empty");
         }
         return value.trim();
     }
