@@ -33,6 +33,11 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendContactMail(Contact contact) {
 
+    	if (contact.getEmailStatus() == EmailStatus.SENT) {
+    		log.info("Email already send for contact id={}", contact.getId());
+    		return;
+    	}
+    	
         log.info("Preparing admin email for user: {}", contact.getEmail());
         try {
             CreateEmailOptions params = CreateEmailOptions.builder()
@@ -54,14 +59,25 @@ public class EmailServiceImpl implements EmailService {
 
             resend.emails().send(params);
             contact.setEmailStatus(EmailStatus.SENT);
+            contact.setEmailError(null);
             log.info("Admin email sent successfully for user: {}", contact.getEmail());
 
         } catch (Exception e) {
-        	contact.setEmailStatus(EmailStatus.FAILED);
-        	contact.setEmailRetryCount(contact.getEmailRetryCount() + 1);
-            log.error("Failed to send admin email for contact id={}", contact.getId(), e);
-            
-        } finally {
+        	int retryCount = contact.getEmailRetryCount() + 1;
+        	contact.setEmailRetryCount(retryCount);
+        	contact.setEmailError(e.getMessage());
+        	
+        	if(retryCount >= Constants.MAX_EMAIL_RETRY) {
+        		contact.setEmailStatus(EmailStatus.FAILED);
+        		log.error("Email permanently failed for contact id={} after {} retries.", contact.getId(), retryCount, e);
+        	}
+         else {
+        	contact.setEmailStatus(EmailStatus.PENDING);
+        	log.warn("Email sending failed for contact id={}. Retry {}/{}", contact.getId(), retryCount, Constants.MAX_EMAIL_RETRY, e);
+        }
+        
+    }
+        finally {
         	try {
         	contactRepository.save(contact);
         } catch (Exception ex) {

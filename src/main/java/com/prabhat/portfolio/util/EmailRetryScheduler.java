@@ -25,19 +25,22 @@ public class EmailRetryScheduler {
 	@Scheduled(fixedDelay = Constants.EMAIL_RETRY_DELAY) // Every 10 minutes
 	public void retryFailedEmail() {
 		log.info("Email retry scheduler started");
-		List<Contact> failedContacts = repository.findByEmailStatusAndEmailRetryCountLessThan(
-				EmailStatus.FAILED,
+		
+		List<Contact> pendingContact = repository.findByEmailStatusAndEmailRetryCountLessThan(
+				EmailStatus.PENDING,
 				Constants.MAX_EMAIL_RETRY
 			);
-		if(failedContacts.isEmpty()) {
+		if(pendingContact.isEmpty()) {
 			log.debug("No failed emails found for retry");
 			return;
 		}
 		
-		log.info("Found {} failed emails for retry", failedContacts.size());
+		log.info("Found {} failed emails for retry", pendingContact.size());
 		
-		for (Contact contact : failedContacts) {
+		for (Contact contact : pendingContact) {
 			emailService.sendContactMail(contact);
 		}
+		
+		log.info("Email retry scheduler completed.");
 	}
 }

@@ -26,11 +26,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "contacts",
-       indexes = {
-    		   @Index(name = "idx_contact_email", columnList = "email"),
-    		   @Index(name = "idx_contact_status", columnList = "status")
-       })
+@Table(
+    name = "contacts",
+    indexes = {
+        @Index(name = "idx_contact_email", columnList = "email"),
+        @Index(name = "idx_contact_status", columnList = "status"),
+        @Index(name = "idx_contact_email_status", columnList = "emailStatus")
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -43,7 +46,7 @@ public class Contact {
     private Long id;
 
     @NotBlank
-    @Size(max=100)
+    @Size(max = 100)
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -62,27 +65,35 @@ public class Contact {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String message;
 
+    // Contact Status
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ContactStatus status;
-    
+
+    // Email Status
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EmailStatus emailStatus;
-    
+
+    // Retry Count
     @Column(nullable = false)
     private Integer emailRetryCount;
-    
+
+    // Last Email Failure Reason
+    @Column(columnDefinition = "TEXT")
+    private String emailError;
+
+    // Admin Reply
     @Column(columnDefinition = "TEXT")
     private String replyMessage;
-    
+
     private LocalDateTime readAt;
-    
+
     private LocalDateTime repliedAt;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
@@ -97,13 +108,13 @@ public class Contact {
         if (this.status == null) {
             this.status = ContactStatus.NEW;
         }
-        
+
         if (this.emailStatus == null) {
-        	this.emailStatus = EmailStatus.PENDING;
+            this.emailStatus = EmailStatus.PENDING;
         }
-        
-        if(this.emailRetryCount == null) {
-        	this.emailRetryCount = 0;
+
+        if (this.emailRetryCount == null) {
+            this.emailRetryCount = 0;
         }
     }
 
