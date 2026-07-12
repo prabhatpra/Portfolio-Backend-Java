@@ -62,7 +62,7 @@ public class AdminController {
 	        ApiResponseDto response = contactService.deleteContact(id);
 
 	        log.info("DELETE /contacts/{} completed successfully", id);
-
+ 
 	        return ResponseEntity.ok(response);
 	    }
 
@@ -74,7 +74,7 @@ public class AdminController {
 
 	        ApiResponseDto response = contactService.markAsRead(id);
 
-	        log.info("PATCH / contacts/{}/read completed successfully", id);
+	        log.info("PATCH /contacts/{}/read completed successfully", id);
 
 	        return ResponseEntity.ok(response);
 	    }
